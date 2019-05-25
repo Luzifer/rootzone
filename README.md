@@ -24,7 +24,7 @@ Usage of rootzone:
       --internic-root-file string   Internic root nameserver file (default "https://www.internic.net/domain/named.root")
       --log-level string            Log level (debug, info, warn, error, fatal) (default "info")
       --opennic-filter strings      OpenNIC TLDs to ignore (default [.,opennic.glue.])
-      --opennic-root string         OpenNIC root server (default "75.127.96.89:53")
+      --opennic-root string         OpenNIC root server (default "75.127.96.89")
       --version                     Prints current version and exits
 ```
 
