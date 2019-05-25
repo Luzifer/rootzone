@@ -99,10 +99,12 @@ func main() {
 		log.WithError(err).Fatal("Unable to parse template")
 	}
 
-	tpl.Execute(os.Stdout, map[string]interface{}{
+	if err := tpl.Execute(os.Stdout, map[string]interface{}{
 		"roots":   rootServers,
 		"version": version,
-	})
+	}); err != nil {
+		log.WithError(err).Fatal("Unable to generate stub file")
+	}
 }
 
 func setRootsFromTLDs(roots map[string][]string, rootsMutex *sync.Mutex, tlds []string, filter []string, resolver func(string) ([]string, error), wg *sync.WaitGroup, cLimiter chan struct{}) {
