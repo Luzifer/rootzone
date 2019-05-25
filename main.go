@@ -46,7 +46,7 @@ func init() {
 		"iana-tld-list":  "https://data.iana.org/TLD/tlds-alpha-by-domain.txt",
 		"internic-root":  "https://www.internic.net/domain/named.root",
 		"opennic-filter": strings.Join([]string{".", "opennic.glue."}, ","),
-		"opennic-root":   "75.127.96.89:53",
+		"opennic-root":   "75.127.96.89",
 	})
 	if err := rconfig.ParseAndValidate(&cfg); err != nil {
 		log.Fatalf("Unable to parse commandline options: %s", err)
@@ -128,7 +128,7 @@ func setRootsFromTLDs(roots map[string][]string, rootsMutex *sync.Mutex, tlds []
 
 			masters, err := resolver(tld)
 			if err != nil {
-				log.WithError(err).WithField("zone", tld).Error("Unable to retrieve zone masters")
+				log.WithError(err).WithField("zone", tld).Fatal("Unable to retrieve zone masters")
 				return
 			}
 
