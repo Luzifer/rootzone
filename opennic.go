@@ -13,9 +13,16 @@ func getOpenNICTLDs() ([]string, error) {
 	m := new(dns.Msg)
 	m.SetQuestion("tlds.opennic.glue.", dns.TypeTXT)
 
-	r, _, err := c.Exchange(m, cfg.OpenNICRoot+":53")
-	if err != nil {
-		return nil, errors.Wrap(err, "Could not query nameservers")
+	var (
+		err error
+		r   *dns.Msg
+	)
+
+	if err = retry(func() error {
+		r, _, err = c.Exchange(m, cfg.OpenNICRoot+":53")
+		return errors.Wrap(err, "Could not query nameservers")
+	}); err != nil {
+		return nil, err
 	}
 
 	if r.Rcode != dns.RcodeSuccess {
@@ -42,9 +49,16 @@ func getOpenNICZoneMasters(tld string) ([]string, error) {
 	m := new(dns.Msg)
 	m.SetQuestion(tld+"opennic.glue.", dns.TypeCNAME)
 
-	r, _, err := c.Exchange(m, cfg.OpenNICRoot+":53")
-	if err != nil {
-		return nil, errors.Wrap(err, "Could not query nameservers")
+	var (
+		err error
+		r   *dns.Msg
+	)
+
+	if err = retry(func() error {
+		r, _, err = c.Exchange(m, cfg.OpenNICRoot+":53")
+		return errors.Wrap(err, "Could not query nameservers")
+	}); err != nil {
+		return nil, err
 	}
 
 	if r.Rcode != dns.RcodeSuccess {
@@ -65,9 +79,11 @@ func getOpenNICZoneMasters(tld string) ([]string, error) {
 		m = new(dns.Msg)
 		m.SetQuestion(master, dns.TypeA)
 
-		r, _, err := c.Exchange(m, cfg.OpenNICRoot+":53")
-		if err != nil {
-			return nil, errors.Wrap(err, "Could not query nameservers")
+		if err = retry(func() error {
+			r, _, err = c.Exchange(m, cfg.OpenNICRoot+":53")
+			return errors.Wrap(err, "Could not query nameservers")
+		}); err != nil {
+			return nil, err
 		}
 
 		if r.Rcode != dns.RcodeSuccess {

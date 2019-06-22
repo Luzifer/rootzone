@@ -42,9 +42,16 @@ func getIANAZoneMasters(tld string) ([]string, error) {
 	m := new(dns.Msg)
 	m.SetQuestion(tld, dns.TypeNS)
 
-	r, _, err := c.Exchange(m, getRandomInternicRoot())
-	if err != nil {
-		return nil, errors.Wrap(err, "Could not query nameservers")
+	var (
+		err error
+		r   *dns.Msg
+	)
+
+	if err = retry(func() error {
+		r, _, err = c.Exchange(m, getRandomInternicRoot())
+		return errors.Wrap(err, "Could not query nameservers")
+	}); err != nil {
+		return nil, err
 	}
 
 	if r.Rcode != dns.RcodeSuccess {
