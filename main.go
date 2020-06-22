@@ -46,7 +46,7 @@ func init() {
 		"iana-tld-list":  "https://data.iana.org/TLD/tlds-alpha-by-domain.txt",
 		"internic-root":  "https://www.internic.net/domain/named.root",
 		"opennic-filter": strings.Join([]string{".", "opennic.glue."}, ","),
-		"opennic-root":   "75.127.96.89",
+		"opennic-root":   "45.56.115.189",
 	})
 	if err := rconfig.ParseAndValidate(&cfg); err != nil {
 		log.Fatalf("Unable to parse commandline options: %s", err)
