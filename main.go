@@ -17,6 +17,7 @@ import (
 var (
 	cfg = struct {
 		ConcurrencyLimit int      `flag:"concurrency-limit" default:"50" description:"How many queries to execute in parallel"`
+		EnableOpenNIC    bool     `flag:"enable-opennic" vardefault:"enable-opennic" description:"Enable adding OpenNIC TLDs"`
 		IANATldList      string   `flag:"iana-tld-list" vardefault:"iana-tld-list" description:"IANA TLD list file"`
 		IANAFilter       []string `flag:"iana-filter" vardefault:"iana-filter" description:"IANA TLDs to igore"`
 		InternicRootFile string   `flag:"internic-root-file" vardefault:"internic-root" description:"Internic root nameserver file"`
@@ -42,6 +43,7 @@ zone "{{ $tld }}" in {
 
 func init() {
 	rconfig.SetVariableDefaults(map[string]string{
+		"enable-opennic": "false",
 		"iana-filter":    strings.Join([]string{"arpa."}, ","),
 		"iana-tld-list":  "https://data.iana.org/TLD/tlds-alpha-by-domain.txt",
 		"internic-root":  "https://www.internic.net/domain/named.root",
@@ -85,12 +87,14 @@ func main() {
 	}
 	setRootsFromTLDs(rootServers, rootServersMutex, ianaTLDs, cfg.IANAFilter, getIANAZoneMasters, wg, cLimiter)
 
-	// Fetch OpenNIC TLDs
-	opennicTLDs, err := getOpenNICTLDs()
-	if err != nil {
-		log.WithError(err).Fatal("Unable to retrieve OpenNIC TLDs")
+	if cfg.EnableOpenNIC {
+		// Fetch OpenNIC TLDs
+		opennicTLDs, err := getOpenNICTLDs()
+		if err != nil {
+			log.WithError(err).Fatal("Unable to retrieve OpenNIC TLDs")
+		}
+		setRootsFromTLDs(rootServers, rootServersMutex, opennicTLDs, cfg.OpenNICFilter, getOpenNICZoneMasters, wg, cLimiter)
 	}
-	setRootsFromTLDs(rootServers, rootServersMutex, opennicTLDs, cfg.OpenNICFilter, getOpenNICZoneMasters, wg, cLimiter)
 
 	wg.Wait()
 
