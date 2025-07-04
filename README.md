@@ -1,8 +1,3 @@
-[![Go Report Card](https://goreportcard.com/badge/github.com/Luzifer/rootzone)](https://goreportcard.com/report/github.com/Luzifer/rootzone)
-![](https://badges.fyi/github/license/Luzifer/rootzone)
-![](https://badges.fyi/github/downloads/Luzifer/rootzone)
-![](https://badges.fyi/github/latest-release/Luzifer/rootzone)
-
 # Luzifer / rootzone
 
 `rootzone` is a small util for my [personal-dns](https://github.com/luzifer-docker/personal-dns) project to collect all IANA and OpenNIC TLDs and generate a named stub file for bind to be able to resolve those TLDs without delegation to third-party nameservers which might be modifying the original responses from the root nameservers.
@@ -10,7 +5,7 @@
 ## Building
 
 ```console
-$ go get github.com/Luzifer/rootzone
+$ go install github.com/Luzifer/rootzone@latest
 ```
 
 ## Usage
@@ -19,12 +14,13 @@ $ go get github.com/Luzifer/rootzone
 $ rootzone --help
 Usage of rootzone:
       --concurrency-limit int       How many queries to execute in parallel (default 50)
+      --enable-opennic              Enable adding OpenNIC TLDs
       --iana-filter strings         IANA TLDs to igore (default [arpa.])
       --iana-tld-list string        IANA TLD list file (default "https://data.iana.org/TLD/tlds-alpha-by-domain.txt")
       --internic-root-file string   Internic root nameserver file (default "https://www.internic.net/domain/named.root")
       --log-level string            Log level (debug, info, warn, error, fatal) (default "info")
       --opennic-filter strings      OpenNIC TLDs to ignore (default [.,opennic.glue.])
-      --opennic-root string         OpenNIC root server (default "75.127.96.89")
+      --opennic-root string         OpenNIC root server (default "45.56.115.189")
       --version                     Prints current version and exits
 ```
 
