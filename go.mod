@@ -9,7 +9,7 @@ require (
 	github.com/Luzifer/rconfig/v2 v2.6.0
 	github.com/miekg/dns v1.1.70
 	github.com/pkg/errors v0.9.1
-	github.com/sirupsen/logrus v1.9.3
+	github.com/sirupsen/logrus v1.9.4
 )
 
 require (
