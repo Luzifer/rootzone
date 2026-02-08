@@ -5,7 +5,7 @@ go 1.24.0
 toolchain go1.25.7
 
 require (
-	github.com/Luzifer/go_helpers/v2 v2.25.0
+	github.com/Luzifer/go_helpers/v2 v2.25.2
 	github.com/Luzifer/rconfig/v2 v2.6.1
 	github.com/miekg/dns v1.1.72
 	github.com/pkg/errors v0.9.1
