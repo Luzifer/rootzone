@@ -5,7 +5,6 @@ go 1.24.0
 toolchain go1.26.0
 
 require (
-	github.com/Luzifer/go_helpers/v2 v2.25.2
 	github.com/Luzifer/rconfig/v2 v2.6.1
 	github.com/miekg/dns v1.1.72
 	github.com/pkg/errors v0.9.1
@@ -13,6 +12,7 @@ require (
 )
 
 require (
+	github.com/kr/text v0.2.0 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/mod v0.31.0 // indirect

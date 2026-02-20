@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"slices"
 	"sort"
 	"strings"
 	"sync"
@@ -10,7 +11,6 @@ import (
 
 	log "github.com/sirupsen/logrus"
 
-	"github.com/Luzifer/go_helpers/v2/str"
 	"github.com/Luzifer/rconfig/v2"
 )
 
@@ -117,7 +117,7 @@ func setRootsFromTLDs(roots map[string][]string, rootsMutex *sync.Mutex, tlds []
 			tld = tld + "."
 		}
 
-		if str.StringInSlice(tld, filter) {
+		if slices.Contains(filter, tld) {
 			continue
 		}
 
