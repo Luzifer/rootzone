@@ -2,7 +2,7 @@ module github.com/Luzifer/rootzone
 
 go 1.24.0
 
-toolchain go1.26.0
+toolchain go1.26.1
 
 require (
 	github.com/Luzifer/rconfig/v2 v2.6.1
