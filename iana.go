@@ -2,39 +2,56 @@ package main
 
 import (
 	"bufio"
+	"context"
+	"fmt"
 	"net"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/miekg/dns"
-	"github.com/pkg/errors"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
-func getIANATLDs() ([]string, error) {
-	tlds := []string{}
+const ianaRequestTimeout = 2 * time.Second
 
-	resp, err := http.Get(cfg.IANATldList)
+func getIANATLDs() (tlds []string, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), ianaRequestTimeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, cfg.IANATldList, nil)
 	if err != nil {
-		return nil, errors.Wrap(err, "Failed to retrieve IANA TLD list")
+		return nil, fmt.Errorf("creating IANA TLD request: %w", err)
 	}
-	defer resp.Body.Close()
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("retrieving IANA TLD list: %w", err)
+	}
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			logrus.WithError(err).Error("closing IANA TLD request")
+		}
+	}()
 
 	scanner := bufio.NewScanner(resp.Body)
 	for scanner.Scan() {
-		if b := scanner.Bytes(); b[0] == '#' || len(b) == 0 {
+		if b := scanner.Bytes(); len(b) == 0 || b[0] == '#' {
 			continue
 		}
 
 		tlds = append(tlds, strings.ToLower(scanner.Text())+".")
 	}
 
+	if err = scanner.Err(); err != nil {
+		return nil, fmt.Errorf("scanning IANA TLD list: %w", err)
+	}
+
 	return tlds, nil
 }
 
-func getIANAZoneMasters(tld string) ([]string, error) {
-	log.WithField("tld", tld).Trace("Getting zone masters")
-	masters := []string{}
+func getIANAZoneMasters(tld string) (masters []string, err error) {
+	logrus.WithField("tld", tld).Trace("Getting zone masters")
 
 	c := new(dns.Client)
 	c.Net = "tcp"
@@ -42,20 +59,21 @@ func getIANAZoneMasters(tld string) ([]string, error) {
 	m := new(dns.Msg)
 	m.SetQuestion(tld, dns.TypeNS)
 
-	var (
-		err error
-		r   *dns.Msg
-	)
-
+	var r *dns.Msg
 	if err = retry(func() error {
-		r, _, err = c.Exchange(m, getRandomInternicRoot())
-		return errors.Wrap(err, "Could not query nameservers")
+		rootServer, err := getRandomInternicRoot(context.Background())
+		if err != nil {
+			return fmt.Errorf("getting root-server to query: %w", err)
+		}
+
+		r, _, err = c.Exchange(m, rootServer)
+		return err //nolint:wrapcheck // wrapped on the outside
 	}); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("querying nameservers: %w", err)
 	}
 
 	if r.Rcode != dns.RcodeSuccess {
-		return nil, errors.New("Query was not successful")
+		return nil, fmt.Errorf("query returned unexpected status: %s", dns.RcodeToString[r.Rcode])
 	}
 
 	for _, a := range r.Ns {

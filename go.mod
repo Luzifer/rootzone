@@ -1,13 +1,13 @@
 module github.com/Luzifer/rootzone
 
-go 1.25
+go 1.26.0
 
 toolchain go1.26.2
 
 require (
+	github.com/Luzifer/go_helpers/rand v0.1.0
 	github.com/Luzifer/rconfig/v2 v2.6.2
 	github.com/miekg/dns v1.1.72
-	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.9.4
 )
 

@@ -2,54 +2,74 @@ package main
 
 import (
 	"bufio"
-	"math/rand"
+	"context"
+	"fmt"
 	"net/http"
 	"regexp"
 	"strings"
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/Luzifer/go_helpers/rand"
+	"github.com/sirupsen/logrus"
 )
+
+const internicRootTimeout = 2 * time.Second
 
 var (
 	internicRoots      []string
 	internicRootsFetch sync.Mutex
 )
 
-func getRandomInternicRoot() string {
+func getRandomInternicRoot(ctx context.Context) (root string, err error) {
 	internicRootsFetch.Lock()
+	defer internicRootsFetch.Unlock()
 
-	rand.Seed(time.Now().UnixNano())
-	if internicRoots != nil {
-		internicRootsFetch.Unlock()
-		return internicRoots[rand.Intn(len(internicRoots))]
-	}
+	if len(internicRoots) == 0 {
+		// Initialize InterNIC root cache
+		reqCtx, cancel := context.WithTimeout(ctx, internicRootTimeout)
+		defer cancel()
 
-	// Initialize InterNIC root cache
-	resp, err := http.Get(cfg.InternicRootFile)
-	if err != nil {
-		log.WithError(err).Fatal("Unable to get InterNIC root file")
-	}
-	defer resp.Body.Close()
-
-	var (
-		matcher = regexp.MustCompile(`\s+A\s+([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$`)
-		roots   = []string{}
-		scanner = bufio.NewScanner(resp.Body)
-	)
-
-	for scanner.Scan() {
-		m := matcher.FindStringSubmatch(scanner.Text())
-		if len(m) != 2 {
-			continue
+		req, err := http.NewRequestWithContext(reqCtx, http.MethodGet, cfg.InternicRootFile, nil)
+		if err != nil {
+			return "", fmt.Errorf("creating InterNIC root request: %w", err)
 		}
-		roots = append(roots, strings.Join([]string{m[1], "53"}, ":"))
+
+		resp, err := http.DefaultClient.Do(req)
+		if err != nil {
+			return "", fmt.Errorf("requesting InterNIC roots: %w", err)
+		}
+		defer func() {
+			if err := resp.Body.Close(); err != nil {
+				logrus.WithError(err).Error("closing InterNIC request")
+			}
+		}()
+
+		var (
+			matcher = regexp.MustCompile(`\s+A\s+([0-9]+\.[0-9]+\.[0-9]+\.[0-9]+)$`)
+			roots   []string
+			scanner = bufio.NewScanner(resp.Body)
+		)
+
+		for scanner.Scan() {
+			m := matcher.FindStringSubmatch(scanner.Text())
+			if len(m) != 2 {
+				continue
+			}
+			roots = append(roots, strings.Join([]string{m[1], "53"}, ":"))
+		}
+
+		if err = scanner.Err(); err != nil {
+			return "", fmt.Errorf("scanning root list: %w", err)
+		}
+
+		internicRoots = roots
 	}
 
-	internicRoots = roots
+	root, err = rand.EntryFromSlice(internicRoots)
+	if err != nil {
+		return "", fmt.Errorf("selecting random root-server: %w", err)
+	}
 
-	// Call self which triggers early-exit
-	internicRootsFetch.Unlock()
-	return getRandomInternicRoot()
+	return root, nil
 }

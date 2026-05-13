@@ -1,8 +1,9 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/miekg/dns"
-	"github.com/pkg/errors"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -20,17 +21,16 @@ func getOpenNICTLDs() ([]string, error) {
 
 	if err = retry(func() error {
 		r, _, err = c.Exchange(m, cfg.OpenNICRoot+":53")
-		return errors.Wrap(err, "Could not query nameservers")
+		return err //nolint:wrapcheck // wrapped on the outside
 	}); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("querying nameservers: %w", err)
 	}
 
 	if r.Rcode != dns.RcodeSuccess {
-		return nil, errors.New("Query was not successful")
+		return nil, fmt.Errorf("query returned unexpected status: %s", dns.RcodeToString[r.Rcode])
 	}
 
-	tlds := []string{}
-
+	var tlds []string
 	for _, a := range r.Answer {
 		if txt, ok := a.(*dns.TXT); ok {
 			tlds = append(tlds, txt.Txt...)
@@ -56,13 +56,13 @@ func getOpenNICZoneMasters(tld string) ([]string, error) {
 
 	if err = retry(func() error {
 		r, _, err = c.Exchange(m, cfg.OpenNICRoot+":53")
-		return errors.Wrap(err, "Could not query nameservers")
+		return err //nolint:wrapcheck // wrapped on the outside
 	}); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("querying nameservers: %w", err)
 	}
 
 	if r.Rcode != dns.RcodeSuccess {
-		return nil, errors.Errorf("Query was not successful: %s", dns.RcodeToString[r.Rcode])
+		return nil, fmt.Errorf("query returned unexpected status: %s", dns.RcodeToString[r.Rcode])
 	}
 
 	masters := []string{"ns0.opennic.glue."}
@@ -73,21 +73,20 @@ func getOpenNICZoneMasters(tld string) ([]string, error) {
 		}
 	}
 
-	masterIPs := []string{}
-
+	var masterIPs []string
 	for _, master := range masters {
 		m = new(dns.Msg)
 		m.SetQuestion(master, dns.TypeA)
 
 		if err = retry(func() error {
 			r, _, err = c.Exchange(m, cfg.OpenNICRoot+":53")
-			return errors.Wrap(err, "Could not query nameservers")
+			return err //nolint:wrapcheck // wrapped on the outside
 		}); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("querying nameservers: %w", err)
 		}
 
 		if r.Rcode != dns.RcodeSuccess {
-			return nil, errors.Errorf("Query was not successful: %s", dns.RcodeToString[r.Rcode])
+			return nil, fmt.Errorf("query returned unexpected status: %s", dns.RcodeToString[r.Rcode])
 		}
 
 		for _, a := range r.Answer {
