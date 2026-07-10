@@ -2,7 +2,7 @@ module github.com/Luzifer/rootzone
 
 go 1.26.0
 
-toolchain go1.26.4
+toolchain go1.26.5
 
 require (
 	github.com/Luzifer/go_helpers/rand v0.1.0
