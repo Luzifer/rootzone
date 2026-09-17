@@ -1,5 +1,5 @@
-github.com/Luzifer/go_helpers/rand v0.1.0 h1:fmXv1hBvZC1kf+dikTKo1AtLmTwiGsE49z1kj8UgxS8=
-github.com/Luzifer/go_helpers/rand v0.1.0/go.mod h1:HRBTtel5fvSkpR56uKSd2mTNxAQkTSDoLVbGWfhb1Qo=
+github.com/Luzifer/go_helpers/rand v0.1.2 h1:cBi6eKc0BQw9o+oOuKmBaWtlTDfcJp9HOr7qa8xldMY=
+github.com/Luzifer/go_helpers/rand v0.1.2/go.mod h1:mVdCEUQ1SZVgaF4S80XsdfOI74ivt3TRxt/fB06jUXE=
 github.com/Luzifer/rconfig/v2 v2.6.2 h1:Dx9WetHvyUx84P8D7WDr7OvsEsD0XT3t04DtCSqT95o=
 github.com/Luzifer/rconfig/v2 v2.6.2/go.mod h1:F8bKJYwzwQT0m0V0N6S8uS7tI6jm05ANCe3D0EHuX/w=
 github.com/creack/pty v1.1.9/go.mod h1:oKZEueFk5CKHvIhNR5MUki03XCEU+Q6VDXinZuGJ33E=

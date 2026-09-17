@@ -5,7 +5,7 @@ go 1.26.0
 toolchain go1.27.1
 
 require (
-	github.com/Luzifer/go_helpers/rand v0.1.0
+	github.com/Luzifer/go_helpers/rand v0.1.2
 	github.com/Luzifer/rconfig/v2 v2.6.2
 	github.com/miekg/dns v1.1.73
 	github.com/sirupsen/logrus v1.10.2
